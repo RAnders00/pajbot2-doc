@@ -110,11 +110,21 @@ mysql -u pajbot2 -p pajbot2_test
 #>INSERT INTO BotChannel(bot_id, twitch_channel_id) VALUES (1, 40286300);
 #>INSERT INTO TwitchUserGlobalPermission(twitch_user_id, permissions) VALUES (40286300, 255);
 
+#
+# build csharp dependency + copy csharp dll dependency files
+#
 cd ~/go/src/github.com/pajlada/pajbot2
 ./utils/install.sh
 
+#
+# build the bot
+#
 cd ~/go/src/github.com/pajlada/pajbot2/cmd/bot
 go build -tags csharp
+
+#
+# run the bot
+#
 ./utils/findlibcoreclr.sh
 # use the path returned by the script
 export LIBCOREFOLDER="/usr/share/dotnet/shared/Microsoft.NETCore.App/2.2.0"
