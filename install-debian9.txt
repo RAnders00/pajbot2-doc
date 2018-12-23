@@ -1,0 +1,121 @@
+set -e
+
+sudo apt update
+
+#
+# Install Guest Additions, if on VirtualBox
+#
+sudo apt install linux-headers-$(uname -r) build-essential
+sudo mount /dev/sr0 /media/cdrom0
+cd /media/cdrom0
+sudo bash VBoxLinuxAdditions.run
+sudo reboot
+
+#
+# Install Node.JS repositories + apt-get dependencies/services
+#
+curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+sudo apt install mysql-server redis-server curl nodejs git build-essential -y
+
+#
+# Install Golang 1.11 into /usr/local/go
+#
+wget https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz
+sudo tar -x -v -z -f go1.11.4.linux-amd64.tar.gz -C /usr/local
+echo 'export PATH="$PATH:/usr/local/go/bin"' >> ~/.bashrc
+source ~/.bashrc
+
+#
+# Install dotnet
+#
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
+sudo mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
+wget -q https://packages.microsoft.com/config/debian/9/prod.list
+sudo mv prod.list /etc/apt/sources.list.d/microsoft-prod.list
+sudo chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
+sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
+sudo apt update
+sudo apt install dotnet-sdk-2.2
+echo 'export DOTNET_CLI_TELEMETRY_OPTOUT="1"' >> ~/.bashrc
+source ~/.bashrc
+
+#
+# download pajbot2 code, fetch pajbot2 go dependencies
+#
+go get github.com/pajlada/pajbot2
+cd ~/go/src/github.com/pajlada/pajbot2/cmd/bot
+git checkout develop
+go get -u
+
+#
+# download web dependencies, build web files
+#
+cd ~/go/src/github.com/pajlada/pajbot2/web
+npm i
+npm run build
+
+#
+# create database and user
+#
+sudo mysql
+>CREATE DATABASE pajbot2_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+>GRANT ALL PRIVILEGES ON pajbot2_test.* TO 'pajbot2'@'localhost' IDENTIFIED BY 'penis123';
+
+
+# Create two applications via twitch:
+# randers00-pajbot2 BOT with return url:
+# http://192.168.2.119:8080/api/auth/twitch/bot/callback
+# randers00-pajbot2 USER with return url:
+# http://192.168.2.119:8080/api/auth/twitch/user/callback
+
+#
+# create config file, link migrations folder
+#
+cat << EOF > ~/go/src/github.com/pajlada/pajbot2/cmd/bot/config.json
+{
+    "Redis": {
+        "Host":"localhost:6379"
+    },
+    "Web": {
+        "Host": "0.0.0.0:8080",
+		"Domain": "192.168.2.119:8080"
+    },
+    "SQL": {
+        "DSN": "pajbot2:penis123@tcp(localhost:3306)/pajbot2_test?charset=utf8mb4,utf8&parseTime=true"
+    },
+    "Auth": {
+        "Twitch": {
+            "Bot": {
+                "ClientID": "1cf0e05d0354fc8c5a7434637e896c",
+                "ClientSecret": "e8073a30840828ee476425ff4fbe85",
+                "RedirectURI": "http://192.168.2.119:8080/api/auth/twitch/bot/callback"
+            },
+            "User": {
+                "ClientID": "565f8e344a13c2932d8cea65f5083a",
+                "ClientSecret": "8914a7b1cb65cd8df2dd3c05f99a81",
+                "RedirectURI": "http://192.168.2.119:8080/api/auth/twitch/user/callback"
+            }
+        }
+    }
+}
+EOF
+
+
+# http://192.168.2.119:8080/api/auth/twitch/bot
+# -> authorize bot account
+
+# join to first channel
+mysql -u pajbot2 -p pajbot2_test
+# get the user id of initial channel to join and admin with !userid command in #pajlada twitch channel :)
+#>INSERT INTO BotChannel(bot_id, twitch_channel_id) VALUES (1, 40286300);
+#>INSERT INTO TwitchUserGlobalPermission(twitch_user_id, permissions) VALUES (40286300, 255);
+
+cd ~/go/src/github.com/pajlada/pajbot2
+./utils/install.sh
+
+cd ~/go/src/github.com/pajlada/pajbot2/cmd/bot
+go build -tags csharp
+./utils/findlibcoreclr.sh
+# use the path returned by the script
+export LIBCOREFOLDER="/usr/share/dotnet/shared/Microsoft.NETCore.App/2.2.0"
+./bot
