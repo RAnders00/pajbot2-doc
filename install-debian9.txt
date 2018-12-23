@@ -108,9 +108,9 @@ EOF
 
 # join to first channel
 mysql -u pajbot2 -p pajbot2_test
-# get the user id of initial channel to join and admin with !userid command in #pajlada twitch channel :)
-#>INSERT INTO BotChannel(bot_id, twitch_channel_id) VALUES (1, 40286300);
+# get the user id of the admin with !userid command in #pajlada twitch channel :)
 #>INSERT INTO TwitchUserGlobalPermission(twitch_user_id, permissions) VALUES (40286300, 255);
+# the bot will join its own channel automatically, you can !pb2join/!pb2leave other channels from there
 
 #
 # build csharp dependency + copy csharp dll dependency files
