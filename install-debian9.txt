@@ -45,6 +45,8 @@ source ~/.bashrc
 go get github.com/pajlada/pajbot2
 cd ~/go/src/github.com/pajlada/pajbot2/cmd/bot
 git checkout develop
+git pull
+git submodule update --init --recursive
 go get -u
 
 #
@@ -129,3 +131,8 @@ go build -tags csharp
 # use the path returned by the script
 export LIBCOREFOLDER="/usr/share/dotnet/shared/Microsoft.NETCore.App/2.2.0"
 ./bot
+
+
+# Things to do:
+# Set up pubsub - in order to be able to record moderation actions.
+# Set up webhooks
