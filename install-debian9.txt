@@ -102,16 +102,6 @@ cat << EOF > ~/go/src/github.com/pajlada/pajbot2/cmd/bot/config.json
 }
 EOF
 
-
-# http://192.168.2.119:8080/api/auth/twitch/bot
-# -> authorize bot account
-
-# join to first channel
-mysql -u pajbot2 -p pajbot2_test
-# get the user id of the admin with !userid command in #pajlada twitch channel :)
-#>INSERT INTO TwitchUserGlobalPermission(twitch_user_id, permissions) VALUES (40286300, 255);
-# the bot will join its own channel automatically, you can !pb2join/!pb2leave other channels from there
-
 #
 # build csharp dependency + copy csharp dll dependency files
 #
@@ -127,11 +117,27 @@ go build -tags csharp
 #
 # run the bot
 #
-./utils/findlibcoreclr.sh
+sudo apt install locate
+sudo updatedb
+~/go/src/github.com/pajlada/pajbot2/utils/findlibcoreclr.sh
 # use the path returned by the script
 export LIBCOREFOLDER="/usr/share/dotnet/shared/Microsoft.NETCore.App/2.2.0"
 ./bot
 
+#
+# authorize the bot account
+#
+# http://192.168.2.119:8080/api/auth/twitch/bot
+# -> authorize bot account
+# stop the bot again with Ctrl-C
+
+#
+# set up admin account with permissions
+#
+mysql -u pajbot2 -p pajbot2_test
+# get the user id of the admin with !userid command in #pajlada twitch channel :)
+#>INSERT INTO TwitchUserGlobalPermission(twitch_user_id, permissions) VALUES (40286300, 255);
+# the bot will join its own channel automatically, you can !pb2join/!pb2leave other channels from there
 
 # Things to do:
 # Set up pubsub - in order to be able to record moderation actions.
