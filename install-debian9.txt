@@ -80,7 +80,7 @@ cat << EOF > ~/go/src/github.com/pajlada/pajbot2/cmd/bot/config.json
     },
     "Web": {
         "Host": "0.0.0.0:8080",
-		"Domain": "192.168.2.119:8080"
+        "Domain": "192.168.2.119:8080"
     },
     "SQL": {
         "DSN": "pajbot2:penis123@tcp(localhost:3306)/pajbot2_test?charset=utf8mb4,utf8&parseTime=true"
