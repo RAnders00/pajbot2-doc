@@ -12,7 +12,7 @@ sudo bash VBoxLinuxAdditions.run
 sudo reboot
 
 #
-# Install Node.JS repositories + apt-get dependencies/services
+# Install Node.js repositories + apt-get dependencies/services
 #
 curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 sudo apt install mysql-server redis-server curl nodejs git build-essential -y
